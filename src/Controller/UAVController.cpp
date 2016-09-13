@@ -22,23 +22,25 @@ UAVController::~UAVController() {
 
 void UAVController::ControlStep(ros::Duration dt)
 {
-
+	ROS_INFO("SPEED PID: %.4f-%.4f=%.4f",speedValue,speedSetpoint,speedValue-speedSetpoint);
 	speed_pid.computeCommand(speedValue-speedSetpoint,dt);
 	if(speed_pid.getCurrentCmd()>1)
 		speed_pid.setCurrentCmd(1);
 	else if(speed_pid.getCurrentCmd()<0)
 		speed_pid.setCurrentCmd(0);
+	ROS_INFO("SPEED PID");
 
 	altitude_pid.computeCommand(altitudeValue-altitudeSetpoint,dt);
 	if(altitude_pid.getCurrentCmd()>.8)
 		altitude_pid.setCurrentCmd(.8);
 		else if(altitude_pid.getCurrentCmd()<-.8)
 			altitude_pid.setCurrentCmd(-.8);
+   	//ROS_INFO("ALTITUDE PID");
 	double pe = 0;
 	double ie = 0;
 	double de = 0;
 	altitude_pid.getCurrentPIDErrors(&pe,&ie,&de);
-	ROS_INFO("dt: %.4f, cmd: %.2f, error: %.4f, pe:%.4f, ie:%.4f, pe:%.4f ",dt.toSec(), altitude_pid.getCurrentCmd(),altitudeValue-altitudeSetpoint, pe,ie,de);
+	//ROS_INFO("dt: %.4f, cmd: %.2f, error: %.4f, pe:%.4f, ie:%.4f, pe:%.4f ",dt.toSec(), altitude_pid.getCurrentCmd(),altitudeValue-altitudeSetpoint, pe,ie,de);
 }
 
 // Update current values

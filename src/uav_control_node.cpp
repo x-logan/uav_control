@@ -14,14 +14,22 @@
 #include <mavros_msgs/VFR_HUD.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/ParamGet.h>
+#include <mavros_msgs/ManualControl.h>
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
 #include "Controller/UAVController.h"
 #include "Utils/Tuning.h"
+#include "Utils/ButtonsDecode.h"
+
+#include "Navigation/Path4D.h"
+#include "Navigation/PathGenerator4D.h"
+#include "Maps/MapTools.h"
 
 mavros_msgs::State currentState;
 mavros_msgs::VFR_HUD currentVfrHud;
 mavros_msgs::RCIn currentRcIn;
+mavros_msgs::ManualControl currentManualControl;
+Utils::ButtonsDecode buttons;
 geometry_msgs::PoseStamped currentPose;
 sensor_msgs::NavSatFix currentGlobalPosition;
 
@@ -33,6 +41,11 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg){
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg){
 	currentPose = *msg;
+}
+
+void manualControlCallback(const mavros_msgs::ManualControl::ConstPtr& msg){
+	currentManualControl = *msg;
+	buttons.Decode(*msg);
 }
 
 void vfrHudCallback(const mavros_msgs::VFR_HUD::ConstPtr& msg){
@@ -56,6 +69,7 @@ int main(int argc, char **argv)
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
                 ("mavros/state", 10, state_cb);
     ros::Subscriber pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("mavros/local_position/pose", 10, poseCallback);
+    ros::Subscriber manual_control = nh.subscribe<mavros_msgs::ManualControl>("mavros/manual_control/control", 10, manualControlCallback);
     ros::Subscriber vfrHudSub = nh.subscribe<mavros_msgs::VFR_HUD>("mavros/vfr_hud", 10, vfrHudCallback);
     ros::Subscriber rcInSub = nh.subscribe<mavros_msgs::RCIn>("mavros/rc/in", 10, rcInCallback);
     ros::Subscriber globalPositionSub = nh.subscribe<sensor_msgs::NavSatFix>("mavros/global_position/global", 10, globalPositionCallback);
@@ -76,6 +90,12 @@ int main(int argc, char **argv)
 
     // Tuning
     Utils::Tuning tuning;
+
+
+    Navigation::PathGenerator4D pathgenerator4D;
+
+
+
 
     // wait for FCU connection
     while(ros::ok() && currentState.connected){
@@ -132,20 +152,25 @@ int main(int argc, char **argv)
         }
 
 
+	//ROS_INFO("Controller Update values");
 
         Controller.UpdateSpeedValue(currentVfrHud.airspeed);
-        Controller.UpdateSpeedSetpoint((((double)(currentRcIn.channels[2]-1109))/(1909-1109))*30);
+        ROS_INFO("Ail: %.2f, Elev: %.2f, Throttle: %.2f, Rud: %.2f",buttons.Aileron,buttons.Elevator,buttons.Throttle,buttons.Rudder);
+        ROS_INFO("buttons: %X, %d, %d, %d, %d, %d, %d",currentManualControl.buttons, buttons.SW1, buttons.SW2, buttons.SW3, buttons.SW4, buttons.SW5, buttons.SW6);
+        Controller.UpdateSpeedSetpoint((double)(currentManualControl.z)*30);
         Controller.UpdateAltitudeValue(currentGlobalPosition.altitude);
         Controller.UpdateAltitudeSetpoint(200);
 
 
 
 
+
         Controller.ControlStep(ros::Time::now() - last_time);
         last_time = ros::Time::now();
+	//ROS_INFO("Controller ControlStep");
 
 
-        tf::Quaternion q = tf::createQuaternionFromRPY((((double)(currentRcIn.channels[1]-1105))/(1905-1105)-.5)*-1.2,-Controller.GetAltitudeControl(),0);
+        tf::Quaternion q = tf::createQuaternionFromRPY((currentManualControl.x)*0.6,(currentManualControl.x)*0.6,0);
 
         att_cmd.pose.orientation.w = q.w();
         att_cmd.pose.orientation.x = q.x();
