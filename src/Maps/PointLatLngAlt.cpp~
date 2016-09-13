@@ -1,0 +1,253 @@
+﻿#include "PointLatLngAlt.h"
+
+
+const PointLatLngAlt PointLatLngAlt::Empty = PointLatLngAlt();
+
+PointLatLngAlt::PointLatLngAlt(double lat, double lng, double alt)
+{
+	this->lat = lat;
+	this->lng = lng;
+	this->alt = alt;
+	NotEmpty = true;
+}
+
+const bool &PointLatLngAlt::getIsEmpty() const
+{
+	return !NotEmpty;
+}
+
+const double &PointLatLngAlt::getLat() const
+{
+	return this->lat;
+}
+
+void PointLatLngAlt::setLat(const double &value)
+{
+	this->lat = value;
+	NotEmpty = true;
+}
+
+const double &PointLatLngAlt::getLng() const
+{
+	return this->lng;
+}
+
+void PointLatLngAlt::setLng(const double &value)
+{
+	this->lng = value;
+	NotEmpty = true;
+}
+
+const double &PointLatLngAlt::getAlt() const
+{
+	return this->alt;
+}
+
+void PointLatLngAlt::setAlt(const double &value)
+{
+	this->alt = value;
+	NotEmpty = true;
+}
+
+PointLatLng *PointLatLngAlt::GetPointLatLng()
+{
+	return new PointLatLng(this->lat, this->lng);
+}
+
+PointLatLngAlt PointLatLngAlt::operator + (SizeLatLngAlt sz)
+{
+	return Add(*this, sz);
+}
+
+PointLatLngAlt PointLatLngAlt::operator - (SizeLatLngAlt sz)
+{
+	return Subtract(*this, sz);
+}
+
+bool PointLatLngAlt::operator == (PointLatLngAlt right)
+{
+	return ((this->getLng() == right.getLng()) && (this->getLat() == right.getLat()) && (this->getAlt() == right.getAlt()));
+}
+
+bool PointLatLngAlt::operator != (PointLatLngAlt right)
+{
+	return !(*this == right);
+}
+
+GMap::NET::PointLatLngAlt PointLatLngAlt::Add(PointLatLngAlt pt, SizeLatLngAlt sz)
+{
+	return PointLatLngAlt(pt.getLat() - sz.getHeightLat(), pt.getLng() + sz.getWidthLng(), pt.getAlt() + sz.getAlt());
+}
+
+GMap::NET::PointLatLngAlt PointLatLngAlt::Subtract(PointLatLngAlt pt, SizeLatLngAlt sz)
+{
+	return PointLatLngAlt(pt.getLat() + sz.getHeightLat(), pt.getLng() - sz.getWidthLng(), pt.getAlt() - sz.getAlt());
+}
+
+bool PointLatLngAlt::Equals(void *obj)
+{
+	if (!(dynamic_cast<PointLatLngAlt>(obj) != nullptr))
+	{
+		return false;
+	}
+	PointLatLngAlt tf = static_cast<PointLatLngAlt>(obj);
+	return (((tf.getLng() == this->getLng()) && (tf.getLat() == this->getLat()) && (tf.getAlt() == this->getAlt())) && tf.GetType()->Equals(__super::GetType()));
+}
+
+void PointLatLngAlt::Offset(PointLatLngAlt pos)
+{
+	this->Offset(pos.getLat(), pos.getLng(), pos.getAlt());
+}
+
+void PointLatLngAlt::Offset(double lat, double lng, double alt)
+{
+	this->setLng(this->getLng() + lng);
+	this->setLat(this->getLat() - lat);
+	this->setAlt(this->getAlt() + alt);
+}
+
+int PointLatLngAlt::GetHashCode()
+{
+	return (this->getLng().GetHashCode() ^ this->getLat().GetHashCode());
+}
+
+std::wstring PointLatLngAlt::ToString()
+{
+	return std::wstring::Format(CultureInfo::CurrentCulture, L"{{Lat={0}, Lng={1}, Alt={2}}}", this->getLat(), this->getLng(), this->getAlt());
+}
+
+std::wstring PointLatLngAlt::ToStringCSV()
+{
+	return std::wstring::Format(CultureInfo::CurrentCulture, L"{0}, {1}, {2}", this->getLat(), this->getLng(), this->getAlt());
+}
+
+SizeLatLngAlt::SizeLatLngAlt(SizeLatLngAlt size)
+{
+	InitializeInstanceFields();
+	this->widthLng = size.widthLng;
+	this->heightLat = size.heightLat;
+	this->alt = size.alt;
+}
+
+SizeLatLngAlt::SizeLatLngAlt(PointLatLngAlt pt)
+{
+	InitializeInstanceFields();
+	this->heightLat = pt.getLat();
+	this->widthLng = pt.getLng();
+	this->alt = pt.getAlt();
+}
+
+SizeLatLngAlt::SizeLatLngAlt(double heightLat, double widthLng, double alt)
+{
+	InitializeInstanceFields();
+	this->heightLat = heightLat;
+	this->widthLng = widthLng;
+	this->alt = alt;
+
+}
+
+SizeLatLngAlt SizeLatLngAlt::operator + (SizeLatLngAlt sz2)
+{
+	return Add(*this, sz2);
+}
+
+SizeLatLngAlt SizeLatLngAlt::operator - (SizeLatLngAlt sz2)
+{
+	return Subtract(*this, sz2);
+}
+
+bool SizeLatLngAlt::operator == (SizeLatLngAlt sz2)
+{
+	return ((this->getWidthLng() == sz2.getWidthLng()) && (this->getHeightLat() == sz2.getHeightLat()) && (this->alt == sz2.alt));
+}
+
+bool SizeLatLngAlt::operator != (SizeLatLngAlt sz2)
+{
+	return !(*this == sz2);
+}
+
+explicit SizeLatLngAlt::operator PointLatLngAlt()
+{
+	return PointLatLngAlt(this->getHeightLat(), this->getWidthLng(), this->alt);
+}
+
+const bool &SizeLatLngAlt::getIsEmpty() const
+{
+	return ((this->widthLng == 0) && (this->heightLat == 0) && (this->alt == 0));
+}
+
+const double &SizeLatLngAlt::getWidthLng() const
+{
+	return this->widthLng;
+}
+
+void SizeLatLngAlt::setWidthLng(const double &value)
+{
+	this->widthLng = value;
+}
+
+const double &SizeLatLngAlt::getHeightLat() const
+{
+	return this->heightLat;
+}
+
+void SizeLatLngAlt::setHeightLat(const double &value)
+{
+	this->heightLat = value;
+}
+
+const double &SizeLatLngAlt::getAlt() const
+{
+	return this->alt;
+}
+
+void SizeLatLngAlt::setAlt(const double &value)
+{
+	this->alt = value;
+}
+
+GMap::NET::SizeLatLngAlt SizeLatLngAlt::Add(SizeLatLngAlt sz1, SizeLatLngAlt sz2)
+{
+	return SizeLatLngAlt(sz1.getHeightLat() + sz2.getHeightLat(), sz1.getWidthLng() + sz2.getWidthLng(), sz1.alt + sz2.alt);
+}
+
+GMap::NET::SizeLatLngAlt SizeLatLngAlt::Subtract(SizeLatLngAlt sz1, SizeLatLngAlt sz2)
+{
+	return SizeLatLngAlt(sz1.getHeightLat() - sz2.getHeightLat(), sz1.getWidthLng() - sz2.getWidthLng(), sz1.alt - sz2.alt);
+}
+
+bool SizeLatLngAlt::Equals(void *obj)
+{
+	if (!(dynamic_cast<SizeLatLngAlt>(obj) != nullptr))
+	{
+		return false;
+	}
+	SizeLatLngAlt ef = static_cast<SizeLatLngAlt>(obj);
+	return (((ef.getWidthLng() == this->getWidthLng()) && (ef.getHeightLat() == this->getHeightLat()) && (ef.getAlt() == this->getAlt())) && ef.GetType()->Equals(__super::GetType()));
+}
+
+int SizeLatLngAlt::GetHashCode()
+{
+	if (this->getIsEmpty())
+	{
+		return 0;
+	}
+	return (this->getWidthLng().GetHashCode() ^ this->getHeightLat().GetHashCode());
+}
+
+GMap::NET::PointLatLngAlt SizeLatLngAlt::ToPointLatLng()
+{
+	return (PointLatLngAlt) *this;
+}
+
+std::wstring SizeLatLngAlt::ToString()
+{
+//C# TO C++ CONVERTER TODO TASK: There is no native C++ equivalent to 'ToString':
+	return (std::wstring(L"{WidthLng=") + this->widthLng.ToString(CultureInfo::CurrentCulture) + std::wstring(L", HeightLng=") + this->heightLat.ToString(CultureInfo::CurrentCulture) + std::wstring(L"}"));
+}
+
+//C# TO C++ CONVERTER TODO TASK: Static constructors are not allowed in native C++:
+SizeLatLngAlt::SizeLatLngAlt()
+{
+	Empty = SizeLatLngAlt();
+}

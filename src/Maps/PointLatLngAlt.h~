@@ -1,0 +1,82 @@
+﻿#pragma once
+
+#include <string>
+
+		/// <summary>
+		/// the point of coordinates
+		/// </summary>
+//C# TO C++ CONVERTER NOTE: The following .NET attribute has no direct equivalent in native C++:
+//ORIGINAL LINE: [Serializable] public struct PointLatLngAlt
+class PointLatLngAlt
+{
+	public:
+		static const PointLatLngAlt Empty;
+	private:
+		double lat;
+		double lng;
+		double alt;
+		bool NotEmpty;
+	public:
+		PointLatLngAlt(double lat, double lng, double alt);
+		/// <summary>
+		/// returns true if coordinates wasn't assigned
+		/// </summary>
+		const bool &getIsEmpty() const;
+		const double &getLat() const;
+		void setLat(const double &value);
+		const double &getLng() const;
+		void setLng(const double &value);
+		const double &getAlt() const;
+		void setAlt(const double &value);
+
+		PointLatLng *GetPointLatLng();
+		PointLatLngAlt operator + (SizeLatLngAlt sz);
+		PointLatLngAlt operator - (SizeLatLngAlt sz);
+		bool operator == (PointLatLngAlt right);
+		bool operator != (PointLatLngAlt right);
+		static PointLatLngAlt Add(PointLatLngAlt pt, SizeLatLngAlt sz);
+		static PointLatLngAlt Subtract(PointLatLngAlt pt, SizeLatLngAlt sz);
+		virtual bool Equals(void *obj) override;
+		void Offset(PointLatLngAlt pos);
+		void Offset(double lat, double lng, double alt);
+		virtual int GetHashCode() override;
+		virtual std::wstring ToString() override;
+
+		std::wstring ToStringCSV();
+};
+
+class SizeLatLngAlt
+{
+	public:
+		static const SizeLatLngAlt Empty;
+	private:
+		double heightLat;
+		double widthLng;
+		double alt;
+	public:
+		SizeLatLngAlt(SizeLatLngAlt size);
+		SizeLatLngAlt(PointLatLngAlt pt);
+		SizeLatLngAlt(double heightLat, double widthLng, double alt);
+		SizeLatLngAlt operator + (SizeLatLngAlt sz2);
+		SizeLatLngAlt operator - (SizeLatLngAlt sz2);
+		bool operator == (SizeLatLngAlt sz2);
+		bool operator != (SizeLatLngAlt sz2);
+		explicit operator PointLatLngAlt();
+		const bool &getIsEmpty() const;
+		const double &getWidthLng() const;
+		void setWidthLng(const double &value);
+		const double &getHeightLat() const;
+		void setHeightLat(const double &value);
+		const double &getAlt() const;
+		void setAlt(const double &value);
+		static SizeLatLngAlt Add(SizeLatLngAlt sz1, SizeLatLngAlt sz2);
+		static SizeLatLngAlt Subtract(SizeLatLngAlt sz1, SizeLatLngAlt sz2);
+		virtual bool Equals(void *obj) override;
+		virtual int GetHashCode() override;
+		PointLatLngAlt ToPointLatLng();
+		virtual std::wstring ToString() override;
+	//C# TO C++ CONVERTER TODO TASK: Static constructors are not allowed in native C++:
+		static SizeLatLngAlt();
+};
+
+
